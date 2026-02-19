@@ -127,6 +127,39 @@
   gap: 2rem;
 }
 
+.ready-screen__instructions {
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text-dim);
+}
+
+.ready-screen__instructions-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ready-screen__instructions kbd {
+  display: inline-block;
+  background: #2a2a3e;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 0.1em 0.5em;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--color-text);
+}
+
 .ready-screen__question {
   font-size: 2rem;
   font-weight: 600;
@@ -423,6 +456,42 @@
 .morse-dash {
   color: var(--color-morse-dah);
   font-weight: 700;
+}
+
+/* ===== Mobile Morse Key ===== */
+
+.morse-key-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0 1rem;
+  margin-top: auto;
+}
+
+.morse-key {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 35% 30%, #f0f0f0 0%, #c0c0c0 50%, #999 100%);
+  border: 3px solid #888;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  transition: box-shadow 0.1s, transform 0.1s;
+}
+
+.morse-key:active {
+  transform: scale(0.95);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 2px 8px rgba(0, 0, 0, 0.3);
+  background: radial-gradient(ellipse at 35% 30%, #e0e0e0 0%, #aaa 50%, #888 100%);
 }
 
 /* ===== Summary Screen ===== */

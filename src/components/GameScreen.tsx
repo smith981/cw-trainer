@@ -5,6 +5,7 @@ import { selectWords } from '../utils/wordLists';
 import { getMorseForChar } from '../utils/morseCode';
 import { useMorseInput } from '../hooks/useMorseInput';
 import { useGameTimer } from '../hooks/useGameTimer';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { ScoreBoard } from './ScoreBoard';
 import { WordDisplay } from './WordDisplay';
 import { MorseDisplay } from './MorseDisplay';
@@ -105,6 +106,7 @@ const initialState: GameState = {
 };
 
 export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
+  const isMobile = useIsMobile();
   const [words] = useState(() => selectWords(difficulty, GAME_CONFIG.wordsPerRound));
   const [state, dispatch] = useReducer(gameReducer, initialState);
   const [isActive, setIsActive] = useState(true);
@@ -225,11 +227,23 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
             </div>
           )}
 
-          <div className="game-screen__instructions">
-            Short press = dit (<span className="morse-dot">&middot;</span>)
-            &nbsp;&nbsp;|&nbsp;&nbsp;
-            Long press = dah (<span className="morse-dash">&mdash;</span>)
-          </div>
+          {!isMobile && (
+            <div className="game-screen__instructions">
+              Short press = dit (<span className="morse-dot">&middot;</span>)
+              &nbsp;&nbsp;|&nbsp;&nbsp;
+              Long press = dah (<span className="morse-dash">&mdash;</span>)
+            </div>
+          )}
+        </div>
+      )}
+
+      {isMobile && state.currentWordIndex < words.length && (
+        <div className="morse-key-container">
+          <button
+            className="morse-key"
+            onTouchStart={e => { e.preventDefault(); morseInput.pressStart(); }}
+            onTouchEnd={e => { e.preventDefault(); morseInput.pressEnd(); }}
+          />
         </div>
       )}
 

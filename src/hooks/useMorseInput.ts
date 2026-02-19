@@ -11,6 +11,8 @@ interface UseMorseInputOptions {
 interface UseMorseInputReturn {
   currentElements: MorseElement[];
   reset: () => void;
+  pressStart: () => void;
+  pressEnd: () => void;
 }
 
 export function useMorseInput({ onLetterDecoded, active }: UseMorseInputOptions): UseMorseInputReturn {
@@ -49,6 +51,26 @@ export function useMorseInput({ onLetterDecoded, active }: UseMorseInputOptions)
     keyDownTimeRef.current = null;
   }, [clearGapTimer]);
 
+  const pressStart = useCallback(() => {
+    if (!active) return;
+    clearGapTimer();
+    keyDownTimeRef.current = performance.now();
+  }, [active, clearGapTimer]);
+
+  const pressEnd = useCallback(() => {
+    if (!active) return;
+    if (keyDownTimeRef.current === null) return;
+
+    const duration = performance.now() - keyDownTimeRef.current;
+    keyDownTimeRef.current = null;
+
+    const element: MorseElement = duration < GAME_CONFIG.ditThresholdMs ? 'dit' : 'dah';
+    elementsRef.current = [...elementsRef.current, element];
+    setElements([...elementsRef.current]);
+
+    startGapTimer();
+  }, [active, startGapTimer]);
+
   useEffect(() => {
     if (!active) {
       reset();
@@ -58,23 +80,13 @@ export function useMorseInput({ onLetterDecoded, active }: UseMorseInputOptions)
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code !== 'Space' || e.repeat) return;
       e.preventDefault();
-      clearGapTimer();
-      keyDownTimeRef.current = performance.now();
+      pressStart();
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.code !== 'Space') return;
       e.preventDefault();
-      if (keyDownTimeRef.current === null) return;
-
-      const duration = performance.now() - keyDownTimeRef.current;
-      keyDownTimeRef.current = null;
-
-      const element: MorseElement = duration < GAME_CONFIG.ditThresholdMs ? 'dit' : 'dah';
-      elementsRef.current = [...elementsRef.current, element];
-      setElements([...elementsRef.current]);
-
-      startGapTimer();
+      pressEnd();
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -85,7 +97,7 @@ export function useMorseInput({ onLetterDecoded, active }: UseMorseInputOptions)
       window.removeEventListener('keyup', handleKeyUp);
       clearGapTimer();
     };
-  }, [active, clearGapTimer, startGapTimer, reset]);
+  }, [active, clearGapTimer, pressStart, pressEnd, reset]);
 
-  return { currentElements: elements, reset };
+  return { currentElements: elements, reset, pressStart, pressEnd };
 }
