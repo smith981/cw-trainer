@@ -36,6 +36,12 @@ export function ReadyScreen({ playerName, onCountdownComplete }: ReadyScreenProp
                   (<span className="morse-dash">&mdash;</span>)
                 </p>
                 <p>Each letter is checked as you go. Get them all right before time runs out!</p>
+
+                <div className="ready-screen__key-preview">
+                  <span className="morse-key-label">TAP KEY</span>
+                  <span className="morse-key-arrow">&darr;</span>
+                  <div className="morse-key morse-key--preview" />
+                </div>
               </>
             ) : (
               <>

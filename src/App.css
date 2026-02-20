@@ -160,6 +160,19 @@
   color: var(--color-text);
 }
 
+.ready-screen__key-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.morse-key--preview {
+  width: 72px;
+  height: 72px;
+}
+
 .ready-screen__question {
   font-size: 2rem;
   font-weight: 600;
