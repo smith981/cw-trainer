@@ -176,6 +176,13 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
     };
   }, [state.feedbackMessage, state.currentWordIndex]);
 
+  const handleQuit = useCallback(() => {
+    if (gameEndedRef.current) return;
+    gameEndedRef.current = true;
+    setIsActive(false);
+    onGameEnd(state.results);
+  }, [state.results, onGameEnd]);
+
   // End game when all words done or round expired
   useEffect(() => {
     if (gameEndedRef.current) return;
@@ -201,6 +208,10 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
         wordsIncorrect={state.wordsIncorrect}
         timeRemaining={timeRemaining}
       />
+
+      <button className="game-screen__quit" onClick={handleQuit}>
+        Quit
+      </button>
 
       <div className="game-screen__info-bar">
         <span className="game-screen__word-count">
