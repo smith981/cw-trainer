@@ -73,12 +73,26 @@ export function ReadyScreen({ playerName, onCountdownComplete }: ReadyScreenProp
       {phase === 'counting' && (
         <div className="ready-screen__countdown" key={count}>
           <span className="ready-screen__number">{count}</span>
+          {isMobile && (
+            <div className="morse-key-container morse-key-container--countdown">
+              <span className="morse-key-label">TAP KEY</span>
+              <span className="morse-key-arrow">&darr;</span>
+              <div className="morse-key" />
+            </div>
+          )}
         </div>
       )}
 
       {phase === 'go' && (
         <div className="ready-screen__go">
           <span className="ready-screen__go-text">GO!</span>
+          {isMobile && (
+            <div className="morse-key-container morse-key-container--countdown">
+              <span className="morse-key-label">TAP KEY</span>
+              <span className="morse-key-arrow">&darr;</span>
+              <div className="morse-key" />
+            </div>
+          )}
         </div>
       )}
     </div>

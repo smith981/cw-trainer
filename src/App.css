@@ -116,8 +116,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
   text-align: center;
+  width: 100%;
 }
 
 .ready-screen__prompt {
@@ -193,8 +196,10 @@
 
 .ready-screen__countdown {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 100%;
 }
 
 .ready-screen__number {
@@ -206,8 +211,10 @@
 
 .ready-screen__go {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 100%;
 }
 
 .ready-screen__go-text {
@@ -483,6 +490,11 @@
   margin-top: auto;
 }
 
+.morse-key-container--countdown {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
 .morse-key-label {
   font-size: 0.8rem;
   font-weight: 700;
@@ -503,8 +515,8 @@
 }
 
 .morse-key {
-  width: 100px;
-  height: 100px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
   background: radial-gradient(ellipse at 35% 30%, #f0f0f0 0%, #c0c0c0 50%, #999 100%);
   border: 3px solid #888;
