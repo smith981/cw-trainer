@@ -111,6 +111,7 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
   const [isActive, setIsActive] = useState(true);
   const [wordTimeLeft, setWordTimeLeft] = useState(GAME_CONFIG.wordTimeLimitSeconds);
+  const [speechEnabled, setSpeechEnabled] = useState(true);
   const gameEndedRef = useRef(false);
   const wordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const wordTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -138,6 +139,20 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
   useEffect(() => {
     startTimer();
   }, [startTimer]);
+
+  // Speak the word when it appears
+  useEffect(() => {
+    if (!speechEnabled || !isActive || state.currentWordIndex >= words.length) return;
+    const word = words[state.currentWordIndex];
+    if (!word) return;
+
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.rate = 0.85;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utterance);
+
+    return () => { speechSynthesis.cancel(); };
+  }, [state.currentWordIndex, speechEnabled, isActive, words]);
 
   // Per-word countdown timer
   useEffect(() => {
@@ -209,9 +224,18 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
         timeRemaining={timeRemaining}
       />
 
-      <button className="game-screen__quit" onClick={handleQuit}>
-        Quit
-      </button>
+      <div className="game-screen__top-actions">
+        <button
+          className="game-screen__speech-toggle"
+          onClick={() => { speechSynthesis.cancel(); setSpeechEnabled(v => !v); }}
+          title={speechEnabled ? 'Mute word speech' : 'Unmute word speech'}
+        >
+          {speechEnabled ? '\u{1F50A}' : '\u{1F507}'}
+        </button>
+        <button className="game-screen__quit" onClick={handleQuit}>
+          Quit
+        </button>
+      </div>
 
       <div className="game-screen__info-bar">
         <span className="game-screen__word-count">

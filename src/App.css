@@ -291,10 +291,30 @@
   font-size: 1.3rem;
 }
 
-.game-screen__quit {
+.game-screen__top-actions {
   position: absolute;
   top: 1rem;
   right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.game-screen__speech-toggle {
+  background: transparent;
+  font-size: 1.2rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-text-dim);
+  border-radius: 6px;
+  line-height: 1;
+  transition: border-color 0.2s;
+}
+
+.game-screen__speech-toggle:hover {
+  border-color: var(--color-text);
+}
+
+.game-screen__quit {
   background: transparent;
   color: var(--color-text-dim);
   font-size: 0.85rem;
