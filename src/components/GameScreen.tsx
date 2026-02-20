@@ -239,6 +239,8 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
 
       {isMobile && state.currentWordIndex < words.length && (
         <div className="morse-key-container">
+          <span className="morse-key-label">TAP KEY</span>
+          <span className="morse-key-arrow">&darr;</span>
           <button
             className="morse-key"
             onTouchStart={e => { e.preventDefault(); morseInput.pressStart(); }}
