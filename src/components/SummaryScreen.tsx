@@ -28,9 +28,7 @@ export function SummaryScreen({ playerName, results, onPlayAgain }: SummaryScree
 
       <div className="summary-screen__columns">
         <div className="summary-screen__column">
-          <h3 className="summary-screen__column-header summary-screen__column-header--correct">
-            Correct Words
-          </h3>
+          <div className="summary-screen__column-line summary-screen__column-line--correct" />
           <ul className="summary-screen__word-list">
             {correctWords.length === 0 && (
               <li className="summary-screen__word-item summary-screen__word-item--empty">None</li>
@@ -41,9 +39,7 @@ export function SummaryScreen({ playerName, results, onPlayAgain }: SummaryScree
           </ul>
         </div>
         <div className="summary-screen__column">
-          <h3 className="summary-screen__column-header summary-screen__column-header--incorrect">
-            Incorrect Words
-          </h3>
+          <div className="summary-screen__column-line summary-screen__column-line--incorrect" />
           <ul className="summary-screen__word-list">
             {incorrectWords.length === 0 && (
               <li className="summary-screen__word-item summary-screen__word-item--empty">None</li>
