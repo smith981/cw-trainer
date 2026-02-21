@@ -5,6 +5,8 @@ interface UseGameTimerReturn {
   isRunning: boolean;
   start: () => void;
   stop: () => void;
+  pause: () => void;
+  resume: () => void;
 }
 
 export function useGameTimer(durationSeconds: number, onExpired: () => void): UseGameTimerReturn {
@@ -46,5 +48,17 @@ export function useGameTimer(durationSeconds: number, onExpired: () => void): Us
     };
   }, [isRunning, stop]);
 
-  return { timeRemaining, isRunning, start, stop };
+  const pause = useCallback(() => {
+    setIsRunning(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
+
+  const resume = useCallback(() => {
+    setIsRunning(true);
+  }, []);
+
+  return { timeRemaining, isRunning, start, stop, pause, resume };
 }

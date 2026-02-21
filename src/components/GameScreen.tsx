@@ -133,7 +133,7 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
     setIsActive(false);
   }, []);
 
-  const { timeRemaining, start: startTimer } = useGameTimer(
+  const { timeRemaining, start: startTimer, pause: pauseTimer, resume: resumeTimer } = useGameTimer(
     GAME_CONFIG.roundDurationSeconds,
     handleRoundExpired
   );
@@ -176,11 +176,13 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
       playBuzzer();
     }
 
-    // Clear word timer during transition
+    // Pause round timer and clear word timer during transition
+    pauseTimer();
     if (wordTimerRef.current) clearInterval(wordTimerRef.current);
     if (wordTimeoutRef.current) clearTimeout(wordTimeoutRef.current);
 
     transitionTimerRef.current = setTimeout(() => {
+      resumeTimer();
       dispatch({ type: 'ADVANCE_WORD' });
     }, FEEDBACK_PAUSE_MS);
 
