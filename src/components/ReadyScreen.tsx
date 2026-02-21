@@ -36,6 +36,10 @@ export function ReadyScreen({ playerName, onCountdownComplete }: ReadyScreenProp
                   (<span className="morse-dash">&mdash;</span>)
                 </p>
                 <p>Each letter is checked as you go. Get them all right before time runs out!</p>
+                <p>
+                  Tap <strong>{'\u{1F50A}'}</strong> to toggle word announcements on/off.
+                  Tap <strong>Quit</strong> to end the round early.
+                </p>
 
                 <div className="ready-screen__key-preview">
                   <span className="morse-key-label">TAP KEY</span>
@@ -57,6 +61,10 @@ export function ReadyScreen({ playerName, onCountdownComplete }: ReadyScreenProp
                   (<span className="morse-dash">&mdash;</span>)
                 </p>
                 <p>Each letter is checked as you go. Get them all right before time runs out!</p>
+                <p>
+                  Click <strong>{'\u{1F50A}'}</strong> to toggle word announcements on/off.
+                  Click <strong>Quit</strong> to end the round early.
+                </p>
               </>
             )}
           </div>
