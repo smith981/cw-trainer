@@ -3,12 +3,15 @@ import type { Difficulty, WordResult } from '../types';
 import { GAME_CONFIG } from '../utils/config';
 import { selectWords } from '../utils/wordLists';
 import { getMorseForChar } from '../utils/morseCode';
+import { playChaChing, playBuzzer } from '../utils/sounds';
 import { useMorseInput } from '../hooks/useMorseInput';
 import { useGameTimer } from '../hooks/useGameTimer';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { ScoreBoard } from './ScoreBoard';
 import { WordDisplay } from './WordDisplay';
 import { MorseDisplay } from './MorseDisplay';
+
+const FEEDBACK_PAUSE_MS = 2000;
 
 interface GameScreenProps {
   difficulty: Difficulty;
@@ -23,16 +26,18 @@ interface GameState {
   wordsIncorrect: number;
   results: WordResult[];
   feedbackMessage: string | null;
+  transitioning: boolean;
 }
 
 type GameAction =
   | { type: 'LETTER_DECODED'; letter: string; words: string[] }
   | { type: 'WORD_TIMEOUT'; words: string[] }
-  | { type: 'CLEAR_FEEDBACK' };
+  | { type: 'ADVANCE_WORD' };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'LETTER_DECODED': {
+      if (state.transitioning) return state;
       const currentWord = action.words[state.currentWordIndex];
       if (!currentWord) return state;
 
@@ -43,10 +48,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state,
           wordsIncorrect: state.wordsIncorrect + 1,
           results: [...state.results, { word: currentWord, correct: false }],
-          currentWordIndex: state.currentWordIndex + 1,
           currentLetterIndex: 0,
           decodedLetters: [],
           feedbackMessage: 'INCORRECT',
+          transitioning: true,
         };
       }
 
@@ -57,10 +62,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state,
           wordsCorrect: state.wordsCorrect + 1,
           results: [...state.results, { word: currentWord, correct: true }],
-          currentWordIndex: state.currentWordIndex + 1,
           currentLetterIndex: 0,
           decodedLetters: [],
           feedbackMessage: 'CORRECT!',
+          transitioning: true,
         };
       }
 
@@ -73,6 +78,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'WORD_TIMEOUT': {
+      if (state.transitioning) return state;
       const currentWord = action.words[state.currentWordIndex];
       if (!currentWord) return state;
 
@@ -80,15 +86,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         wordsIncorrect: state.wordsIncorrect + 1,
         results: [...state.results, { word: currentWord, correct: false }],
-        currentWordIndex: state.currentWordIndex + 1,
         currentLetterIndex: 0,
         decodedLetters: [],
         feedbackMessage: 'TIME UP!',
+        transitioning: true,
       };
     }
 
-    case 'CLEAR_FEEDBACK':
-      return { ...state, feedbackMessage: null };
+    case 'ADVANCE_WORD':
+      return {
+        ...state,
+        currentWordIndex: state.currentWordIndex + 1,
+        feedbackMessage: null,
+        transitioning: false,
+      };
 
     default:
       return state;
@@ -103,6 +114,7 @@ const initialState: GameState = {
   wordsIncorrect: 0,
   results: [],
   feedbackMessage: null,
+  transitioning: false,
 };
 
 export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
@@ -115,7 +127,7 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
   const gameEndedRef = useRef(false);
   const wordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const wordTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleRoundExpired = useCallback(() => {
     setIsActive(false);
@@ -132,7 +144,7 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
 
   const morseInput = useMorseInput({
     onLetterDecoded: handleLetterDecoded,
-    active: isActive && state.currentWordIndex < words.length,
+    active: isActive && !state.transitioning && state.currentWordIndex < words.length,
   });
 
   // Start the round timer on mount
@@ -140,9 +152,9 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
     startTimer();
   }, [startTimer]);
 
-  // Speak the word when it appears
+  // Speak the word when it appears (after transition ends)
   useEffect(() => {
-    if (!speechEnabled || !isActive || state.currentWordIndex >= words.length) return;
+    if (!speechEnabled || !isActive || state.transitioning || state.currentWordIndex >= words.length) return;
     const word = words[state.currentWordIndex];
     if (!word) return;
 
@@ -152,11 +164,34 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
     speechSynthesis.speak(utterance);
 
     return () => { speechSynthesis.cancel(); };
-  }, [state.currentWordIndex, speechEnabled, isActive, words]);
+  }, [state.currentWordIndex, state.transitioning, speechEnabled, isActive, words]);
 
-  // Per-word countdown timer
+  // Play sound and pause on feedback, then advance to next word
   useEffect(() => {
-    if (!isActive || state.currentWordIndex >= words.length) return;
+    if (!state.transitioning || !state.feedbackMessage) return;
+
+    if (state.feedbackMessage === 'CORRECT!') {
+      playChaChing();
+    } else {
+      playBuzzer();
+    }
+
+    // Clear word timer during transition
+    if (wordTimerRef.current) clearInterval(wordTimerRef.current);
+    if (wordTimeoutRef.current) clearTimeout(wordTimeoutRef.current);
+
+    transitionTimerRef.current = setTimeout(() => {
+      dispatch({ type: 'ADVANCE_WORD' });
+    }, FEEDBACK_PAUSE_MS);
+
+    return () => {
+      if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+    };
+  }, [state.transitioning, state.feedbackMessage]);
+
+  // Per-word countdown timer (only when not transitioning)
+  useEffect(() => {
+    if (!isActive || state.transitioning || state.currentWordIndex >= words.length) return;
 
     setWordTimeLeft(GAME_CONFIG.wordTimeLimitSeconds);
 
@@ -176,20 +211,7 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
       if (wordTimerRef.current) clearInterval(wordTimerRef.current);
       if (wordTimeoutRef.current) clearTimeout(wordTimeoutRef.current);
     };
-  }, [state.currentWordIndex, isActive, words, morseInput]);
-
-  // Clear feedback after delay
-  useEffect(() => {
-    if (!state.feedbackMessage) return;
-
-    feedbackTimerRef.current = setTimeout(() => {
-      dispatch({ type: 'CLEAR_FEEDBACK' });
-    }, 800);
-
-    return () => {
-      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
-    };
-  }, [state.feedbackMessage, state.currentWordIndex]);
+  }, [state.currentWordIndex, state.transitioning, isActive, words, morseInput]);
 
   const handleQuit = useCallback(() => {
     if (gameEndedRef.current) return;
@@ -202,15 +224,14 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
   useEffect(() => {
     if (gameEndedRef.current) return;
 
-    if (!isActive || state.currentWordIndex >= words.length) {
+    if (!isActive || (!state.transitioning && state.currentWordIndex >= words.length)) {
       gameEndedRef.current = true;
-      // Small delay so user sees the last feedback
       const timer = setTimeout(() => {
         onGameEnd(state.results);
       }, 1200);
       return () => clearTimeout(timer);
     }
-  }, [isActive, state.currentWordIndex, state.results, words.length, onGameEnd]);
+  }, [isActive, state.currentWordIndex, state.transitioning, state.results, words.length, onGameEnd]);
 
   const currentWord = words[state.currentWordIndex] ?? '';
   const currentExpectedChar = currentWord[state.currentLetterIndex] ?? '';
@@ -224,19 +245,6 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
         timeRemaining={timeRemaining}
       />
 
-      <div className="game-screen__top-actions">
-        <button
-          className="game-screen__speech-toggle"
-          onClick={() => { speechSynthesis.cancel(); setSpeechEnabled(v => !v); }}
-          title={speechEnabled ? 'Mute word speech' : 'Unmute word speech'}
-        >
-          {speechEnabled ? '\u{1F50A}' : '\u{1F507}'}
-        </button>
-        <button className="game-screen__quit" onClick={handleQuit}>
-          Quit
-        </button>
-      </div>
-
       <div className="game-screen__info-bar">
         <span className="game-screen__word-count">
           Word {Math.min(state.currentWordIndex + 1, words.length)} of {words.length}
@@ -244,6 +252,18 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
         <span className="game-screen__word-timer">
           Word time: {wordTimeLeft}s
         </span>
+        <div className="game-screen__actions">
+          <button
+            className="game-screen__speech-toggle"
+            onClick={() => { speechSynthesis.cancel(); setSpeechEnabled(v => !v); }}
+            title={speechEnabled ? 'Mute word speech' : 'Unmute word speech'}
+          >
+            {speechEnabled ? '\u{1F50A}' : '\u{1F507}'}
+          </button>
+          <button className="game-screen__quit" onClick={handleQuit}>
+            Quit
+          </button>
+        </div>
       </div>
 
       {state.currentWordIndex < words.length && (
@@ -254,15 +274,17 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
             decodedLetters={state.decodedLetters}
           />
 
-          <MorseDisplay elements={morseInput.currentElements} />
+          {!state.transitioning && (
+            <MorseDisplay elements={morseInput.currentElements} />
+          )}
 
-          {expectedMorse && (
+          {!state.transitioning && expectedMorse && (
             <div className="game-screen__hint">
               Hint: <strong>{currentExpectedChar}</strong> = {expectedMorse}
             </div>
           )}
 
-          {!isMobile && (
+          {!isMobile && !state.transitioning && (
             <div className="game-screen__instructions">
               Short press = dit (<span className="morse-dot">&middot;</span>)
               &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -272,7 +294,7 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
         </div>
       )}
 
-      {isMobile && state.currentWordIndex < words.length && (
+      {isMobile && state.currentWordIndex < words.length && !state.transitioning && (
         <div className="morse-key-container">
           <span className="morse-key-label">TAP KEY</span>
           <span className="morse-key-arrow">&darr;</span>
@@ -286,7 +308,7 @@ export function GameScreen({ difficulty, onGameEnd }: GameScreenProps) {
 
       {state.feedbackMessage && (
         <div
-          className={`game-screen__feedback ${
+          className={`game-screen__feedback game-screen__feedback--pause ${
             state.feedbackMessage === 'CORRECT!'
               ? 'game-screen__feedback--correct'
               : 'game-screen__feedback--incorrect'
