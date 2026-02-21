@@ -72,7 +72,15 @@ export function ReadyScreen({ playerName, onCountdownComplete }: ReadyScreenProp
           <h2 className="ready-screen__question">
             Are you Ready, {playerName}?
           </h2>
-          <button className="ready-screen__button" onClick={start}>
+          <button
+            className="ready-screen__button"
+            onClick={() => {
+              // Unlock speech synthesis on mobile (requires user gesture)
+              const utterance = new SpeechSynthesisUtterance('');
+              speechSynthesis.speak(utterance);
+              start();
+            }}
+          >
             Ready!
           </button>
         </div>
