@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import type { MorseElement } from '../types';
 import { GAME_CONFIG } from '../utils/config';
 import { decodeMorseElements } from '../utils/morseCode';
+import { startKeyTone, stopKeyTone } from '../utils/sounds';
 
 interface UseMorseInputOptions {
   onLetterDecoded: (letter: string) => void;
@@ -46,6 +47,7 @@ export function useMorseInput({ onLetterDecoded, active }: UseMorseInputOptions)
 
   const reset = useCallback(() => {
     clearGapTimer();
+    stopKeyTone();
     elementsRef.current = [];
     setElements([]);
     keyDownTimeRef.current = null;
@@ -55,9 +57,11 @@ export function useMorseInput({ onLetterDecoded, active }: UseMorseInputOptions)
     if (!active) return;
     clearGapTimer();
     keyDownTimeRef.current = performance.now();
+    startKeyTone();
   }, [active, clearGapTimer]);
 
   const pressEnd = useCallback(() => {
+    stopKeyTone();
     if (!active) return;
     if (keyDownTimeRef.current === null) return;
 

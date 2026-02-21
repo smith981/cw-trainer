@@ -26,6 +26,34 @@ export function playChaChing(): void {
   });
 }
 
+// --- CW key tone (held while pressing) ---
+
+let cwOsc: OscillatorNode | null = null;
+let cwGain: GainNode | null = null;
+
+export function startKeyTone(): void {
+  const ctx = getAudioContext();
+  if (cwOsc) return; // already playing
+
+  cwOsc = ctx.createOscillator();
+  cwGain = ctx.createGain();
+  cwOsc.type = 'sine';
+  cwOsc.frequency.value = 660;
+  cwGain.gain.setValueAtTime(0.25, ctx.currentTime);
+  cwOsc.connect(cwGain);
+  cwGain.connect(ctx.destination);
+  cwOsc.start();
+}
+
+export function stopKeyTone(): void {
+  if (!cwGain || !cwOsc) return;
+  const ctx = getAudioContext();
+  cwGain.gain.setTargetAtTime(0, ctx.currentTime, 0.01);
+  cwOsc.stop(ctx.currentTime + 0.05);
+  cwOsc = null;
+  cwGain = null;
+}
+
 export function playBuzzer(): void {
   const ctx = getAudioContext();
   const now = ctx.currentTime;
