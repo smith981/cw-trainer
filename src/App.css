@@ -4,9 +4,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
   text-align: center;
-  padding: 2rem 1rem;
+  padding: 1rem;
 }
 
 .landing-page__title {
@@ -116,31 +116,30 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100dvh;
-  max-height: 100dvh;
-  overflow: hidden;
+  flex: 1;
   text-align: center;
   width: 100%;
+  overflow: hidden;
 }
 
 .ready-screen__prompt {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  gap: 1.25rem;
 }
 
 .ready-screen__instructions {
   background: var(--color-surface);
   border: 1px solid var(--color-accent);
   border-radius: 10px;
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;
   max-width: 480px;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
   color: var(--color-text-dim);
 }
 
@@ -167,26 +166,26 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
+  gap: 0.15rem;
+  margin-top: 0.25rem;
 }
 
 .morse-key--preview {
-  width: 72px;
-  height: 72px;
+  width: 60px;
+  height: 60px;
 }
 
 .ready-screen__question {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 600;
 }
 
 .ready-screen__button {
   background: var(--color-correct);
   color: white;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  padding: 1rem 3rem;
+  padding: 0.75rem 2.5rem;
   border-radius: 12px;
 }
 
@@ -250,12 +249,14 @@
 
 .game-screen {
   width: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  padding: 1rem 0;
+  gap: 1rem;
+  padding: 0.5rem 0;
   position: relative;
+  overflow: hidden;
 }
 
 .score-board {
